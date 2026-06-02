@@ -1,43 +1,23 @@
-# Stage 1: Dependency builder
-FROM node:20-alpine AS builder
+FROM node:22-bullseye-slim AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-COPY prisma ./prisma/
 
+# Use npm install instead of npm ci to prevent lockfile conflicts
 RUN npm install
-RUN npx prisma generate
 
 COPY . .
 RUN npm run build
 
-# Stage 2: Runtime Production Stage
-FROM node:20-alpine AS runner
-
+FROM node:22-bullseye-slim
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-# Install essential ssl libraries for Prisma Postgres checks
-RUN apk add --no-cache openssl
-
-COPY package*.json ./
-COPY prisma ./prisma/
-
-RUN npm install --omit=dev
-RUN npx prisma generate
-
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 
-# Create uploads storage mount points
-RUN mkdir -p uploads && chown -R node:node /app
+# Install production dependencies only
+RUN npm install --omit=dev
 
-USER node
-
-EXPOSE 5000
-
-HEALTHCHECK --interval=12s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://localhost:5000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
-
-CMD ["node", "dist/index.js"]
+EXPOSE 3000
+CMD ["npm", "start"]

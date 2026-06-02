@@ -1,55 +1,19 @@
-# Stage 1: Build static assets
-FROM node:20-alpine AS builder
+FROM node:22-bullseye-slim AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
+# Use npm install instead of npm ci to prevent lockfile mismatch issues
 RUN npm install
 
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve using optimized Nginx
-FROM nginx:1.25-alpine
-
+FROM nginx:alpine
+# Copy the built assets from Vite's dist folder
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Custom SPA routing config
-COPY <<EOF /etc/nginx/conf.d/default.conf
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        root /usr/share/nginx/html;
-        index index.html index.htm;
-        try_files \$uri \$uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://backend:5000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-
-    location /socket.io/ {
-        proxy_pass http://backend:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-
-    error_page 500 502 503 504 /50x.html;
-    location = /50x.html {
-        root /usr/share/nginx/html;
-    }
-}
-EOF
+# Provide SPA fallback routing for React Router
+RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; index index.html index.htm; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

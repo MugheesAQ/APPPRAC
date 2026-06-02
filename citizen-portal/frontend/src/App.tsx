@@ -60,7 +60,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [initialize]);
 
   return (
-    <div className="h-screen flex flex-row bg-[#f5f5f5] text-[#212121] overflow-hidden transition-colors duration-200">
+    <div className="h-screen flex flex-row bg-[#f5f5f5] text-[#212121] overflow-hidden">
       {/* Sidebar full-height left pane */}
       {isAuthenticated && (
         <Sidebar 
@@ -70,11 +70,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
       
       {/* Main interactive screen workspace block (right pane) */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Navbar onMobileMenuToggle={() => setMobileSidebarOpen(!mobileSidebarOpen)} />
-        <Breadcrumbs />
+      <div className="flex-1 flex flex-col min-w-0 w-full h-screen overflow-hidden">
+        <div className="flex flex-col w-full shrink-0">
+          <Navbar onMobileMenuToggle={() => setMobileSidebarOpen(!mobileSidebarOpen)} />
+          <Breadcrumbs />
+        </div>
         
-        <main className="flex-1 flex flex-col overflow-y-auto">
+        <main className="flex-1 flex flex-col w-full overflow-y-auto overflow-x-hidden bg-[#f5f5f5]">
           {children}
           <Footer />
         </main>
