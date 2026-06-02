@@ -1,0 +1,6 @@
+{
+  "name": "Unified Citizen Portal",
+  "description": "An official-style portal for civic services, application submission, tracking, notifications, and profile management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

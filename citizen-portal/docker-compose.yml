@@ -1,0 +1,81 @@
+version: "3.8"
+
+services:
+  # 2. React Static Server
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: citizen_portal_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - citizen_network
+
+  # 3. Node.js Express API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: citizen_portal_backend
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://gov_admin:gov_sec_pass_2026@postgres_db:5432/citizen_db?schema=public
+      - REDIS_URL=redis://redis_cache:6379
+      - JWT_SECRET=gov_supreme_security_key_level_6_2026
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis_cache:
+        condition: service_started
+    volumes:
+      - backend_uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - citizen_network
+
+  # 4. Relational SQL Database
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: citizen_portal_db
+    environment:
+      - POSTGRES_USER=gov_admin
+      - POSTGRES_PASSWORD=gov_sec_pass_2026
+      - POSTGRES_DB=citizen_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gov_admin -d citizen_db"]
+      interval: 8s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - citizen_network
+
+  # 5. Caching & Session Store
+  redis_cache:
+    image: redis:7-alpine
+    container_name: citizen_portal_cache
+    command: redis-server --appendonly yes --save 60 1
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - citizen_network
+
+networks:
+  citizen_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_uploads:
+    driver: local
