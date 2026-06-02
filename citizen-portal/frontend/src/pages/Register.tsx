@@ -103,7 +103,7 @@ export default function Register() {
                   setErrors((prev) => ({ ...prev, name: "" }));
                 }}
                 error={errors.name}
-                placeholder="e.g., Jonathan Tan"
+                placeholder="e.g., Jamila Bibi"
               />
 
               <Input
