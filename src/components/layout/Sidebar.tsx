@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Desktop Sidebar static placement */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-[#1a237e] text-white flex-col h-full">
+      <aside className="hidden lg:flex w-64 items-stretch shrink-0 bg-[#1a237e] text-white flex-col h-screen sticky top-0">
         {renderContent()}
       </aside>
 
