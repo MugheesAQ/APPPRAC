@@ -125,7 +125,7 @@ export const useCitizenStore = create<AppState>((set, get) => ({
         const loggedUser: User = {
           id: userObj.id || (isCitizen ? "usr-citizen" : "usr-admin"),
           email: userObj.email,
-          name: isCitizen ? "Jonathan Tan" : "Administrator (GovTech)",
+          name: isCitizen ? "Jamila Bibi" : "Administrator (GovTech)",
           role: userObj.role || (isCitizen ? "Citizen" : "Admin"),
           phone: isCitizen ? "+65 9123 4567" : "+65 6888 8888",
           nric: isCitizen ? "S9584732A" : "S8049382F",
